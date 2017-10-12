@@ -11,11 +11,14 @@ with OSx
 - This app should work on Linux, Windows and OSx
 """
 
+
 from __future__ import division, unicode_literals, print_function, absolute_import
 
 from PySide import QtGui, QtCore
 import sys
 import platform
+
+import lbp
 
 from skimage import data, io, filters
 from skimage import feature
@@ -52,6 +55,10 @@ class MainWindowWidget(QtGui.QWidget):
         self.edge_button_normal = QtGui.QPushButton("Normal edge")
         self.edge_button_normal.clicked.connect(self.edge_process)
 
+        # Button that computes local binary pattern
+        self.lbp_button = QtGui.QPushButton("LBP")
+        self.lbp_button.clicked.connect(self.localBinaryPatter_process)
+
         # Image viewing region
         self.lbl = QtGui.QLabel(self)
 
@@ -60,6 +67,7 @@ class MainWindowWidget(QtGui.QWidget):
         layout_button.addWidget(self.load_button)
         layout_button.addWidget(self.edge_button)
         layout_button.addWidget(self.edge_button_normal)
+        layout_button.addWidget(self.lbp_button)
         layout_button.addStretch()
 
         # A Vertical layout to include the button layout and then the image
@@ -93,11 +101,18 @@ class MainWindowWidget(QtGui.QWidget):
         p = Process(None, self.find_image_edge)
         p.start()
 
+    def localBinaryPatter_process(self):
+        p = Process(None, self.localBinaryPatter)
+        p.start()
+
+    def localBinaryPatter(self):
+        lbp.draw_lbp_plot(self.img)
+
     def find_image_edge_canny(self):
 
         im = cv2.cvtColor(self.img, cv2.COLOR_RGB2GRAY)
         edges1 = feature.canny(im)
-        edges2 = feature.canny(im, sigma=3)
+        edges2 = feature.canny(im, sigma=2)
 
         fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(8, 3), sharex=True, sharey=True)
 
@@ -113,7 +128,7 @@ class MainWindowWidget(QtGui.QWidget):
 
         ax3.imshow(edges2, cmap=plt.cm.gray)
         ax3.axis('off')
-        ax3.set_title('Canny filter, $\sigma=3$', fontsize=20)
+        ax3.set_title('Canny filter, $\sigma=2$', fontsize=20)
 
         fig.tight_layout()
 
